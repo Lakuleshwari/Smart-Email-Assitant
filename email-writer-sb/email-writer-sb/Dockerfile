@@ -1,9 +1,12 @@
-FROM openjdk:17-jdk-slim
-
+# Stage 1: Build the JAR
+FROM maven:3.9.4-eclipse-temurin-17 AS builder
 WORKDIR /app
+COPY . .
+RUN mvn clean package -DskipTests
 
-COPY target/email-writer-sb-0.0.1-SNAPSHOT.jar /app/email-writer-sb.jar
-
+# Stage 2: Run the app
+FROM openjdk:17-jdk-slim
+WORKDIR /app
+COPY --from=builder /app/target/email-writer-sb-0.0.1-SNAPSHOT.jar app.jar
 EXPOSE 8080
-
-CMD ["java", "-jar", "email-writer-sb.jar"]
+CMD ["java", "-jar", "app.jar"]
